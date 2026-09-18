@@ -1,0 +1,122 @@
+# ============================================================================
+# KnowMemo — what must never reach a git remote
+# ============================================================================
+#
+# The entries below fall into two groups, and they are not equally serious:
+#
+#   * **Personal data** — imported conversations, plaintext snapshots, the
+#     metadata database. This is other people's words. A commit is not
+#     recoverable by a later `git rm`: the object stays in the history and in
+#     every clone, and on a public remote it must be assumed read.
+#   * **Device and tooling noise** — caches, virtualenvs, editor droppings.
+#
+# `data/` is ignored as a whole rather than file by file because KnowMemo
+# decides what goes in there at runtime, and a deny-list of filenames would
+# always be one release behind.
+# ----------------------------------------------------------------------------
+
+# --- KnowMemo runtime data (design doc §42 Rule 8) ---------------------------
+# data/raw, data/normalized, data/knowledge, data/logs and the metadata
+# database all live here by default. Raw imported conversations must never be
+# committed.
+data/
+
+# --- Databases, wherever they are -------------------------------------------
+# `storage.database_url` is configurable, so the metadata database is not
+# guaranteed to be under data/. The -wal sidecar matters on its own: it can
+# hold messages that have not been checkpointed into the .db yet, so ignoring
+# the database alone is not enough.
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
+# --- Plaintext WeChat snapshots ---------------------------------------------
+# The connector's input is a *directory* of SQLite files (docs/plan.md D4).
+# These are the names people give them when they drop one beside the repo.
+# NOTE: if you relocate `storage.database_url`, the derived tree moves with
+# it — add that directory here too. KnowMemo writes conversations into
+# <database parent>/normalized and <database parent>/knowledge.
+snapshots/
+snapshot/
+
+# --- Local configuration and secrets ----------------------------------------
+# knowmemo.yaml is a first-class config path (config/settings.py) and can hold
+# `weknora.api_key` and absolute paths to your own machine.
+knowmemo.yaml
+knowmemo.local.yaml
+.env
+.env.*
+!.env.example
+
+# Credentials, in the shapes they usually arrive in.
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.yaml
+secrets.yml
+.netrc
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+.eggs/
+build/
+dist/
+wheels/
+.venv/
+venv/
+env/
+
+# --- Tooling caches ----------------------------------------------------------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# --- Scratch space -----------------------------------------------------------
+# Test runs in restricted environments redirect tmp_path here. See README.
+.tmp/
+*.log
+/logs/
+
+# --- Assistant and editor workspace -----------------------------------------
+# .workbuddy-ai/ holds the assistant's project memory: notes about this
+# machine, paths outside the repo, and decisions taken in conversation. It is
+# local context, not project source, and it is not written for an audience.
+.workbuddy-ai/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- macOS -------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# --- Windows -----------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
